@@ -42,7 +42,7 @@ handling = st.selectbox(
 )
 handling_score = 0 if "Stationary" in handling else 3
 
-# 3. ELECTRICAL CLASS (FIXED: Special character completely removed to prevent PDF crashes)
+# 3. ELECTRICAL CLASS
 el_class = st.selectbox(
     "Step 3: What is the Electrical Class?",
     ["Class I (Earthed - Has metal casing/earth pin)", 
@@ -74,14 +74,14 @@ risk_level = ""
 visual_freq = ""
 test_freq = ""
 notes = ""
-rgb_fill = (46, 204, 113) # Green default
+rgb_fill = (46, 204, 113)
 
 if total_score <= 1:
     risk_level = "LOW"
     visual_freq = "Every 24 Months"
     test_freq = "Every 24 to 36 Months"
-    notes = "Perfect for office PCs, monitors, and stationary earthed/double-insulated equipment."
-    rgb_fill = (46, 204, 113) # Clean Green
+    notes = "Perfect for office PCs, monitors, and stationary equipment."
+    rgb_fill = (46, 204, 113)
     st.success(f"### RISK LEVEL: {risk_level}")
     st.write(f"**Formal Visual Inspection:** {visual_freq}")
     st.write(f"**Combined Testing (PAT):** {test_freq}")
@@ -90,8 +90,8 @@ elif total_score <= 3:
     risk_level = "LOW-MEDIUM"
     visual_freq = "Every 12 Months"
     test_freq = "Every 12 to 24 Months"
-    notes = "Standard cycle. For Class II items (like chargers) here, routine instrument testing is not required; visual checks are sufficient."
-    rgb_fill = (52, 152, 219) # Business Blue
+    notes = "Standard cycle. For Class II items here, routine instrument testing is not required; visual checks are sufficient."
+    rgb_fill = (52, 152, 219)
     st.success(f"### RISK LEVEL: {risk_level}")
     st.write(f"**Formal Visual Inspection:** {visual_freq}")
     st.write(f"**Combined Testing (PAT):** {test_freq}")
@@ -100,8 +100,8 @@ elif total_score <= 6:
     risk_level = "MEDIUM-HIGH"
     visual_freq = "Every 12 Months"
     test_freq = "Every 12 Months"
-    notes = "Standard cycle for handheld Class I items (like kettles) or equipment in harsher environments."
-    rgb_fill = (230, 126, 34) # Amber/Orange
+    notes = "Standard cycle for handheld Class I items or equipment in harsher environments."
+    rgb_fill = (230, 126, 34)
     st.warning(f"### RISK LEVEL: {risk_level}")
     st.write(f"**Recommended Initial Frequency:** {test_freq}")
     st.write(f"*{notes}*")
@@ -109,14 +109,14 @@ else:
     risk_level = "HIGH / EXTREME"
     visual_freq = "High Frequency (Daily/Weekly checks recommended on-site)"
     test_freq = "Every 3 to 6 Months"
-    notes = "Mandatory high-frequency testing for construction sites, heavy tools, or heavily abused equipment."
-    rgb_fill = (231, 76, 60) # High-Risk Red
+    notes = "Mandatory high-frequency testing for construction sites or heavily abused equipment."
+    rgb_fill = (231, 76, 60)
     st.error(f"### RISK LEVEL: {risk_level}")
     st.write(f"**Recommended Initial Frequency:** {test_freq}")
     st.write(f"*{notes}*")
 
 if is_cable:
-    st.warning("⚠️ *Note: Risk increased due to item being a power lead/extension, as recommended by risk safety standards.*")
+    st.warning("⚠️ *Note: Risk increased due to item being a power lead/extension.*")
 
 st.markdown("---")
 st.subheader("📄 Export Report")
@@ -124,12 +124,12 @@ st.subheader("📄 Export Report")
 # --- EXECUTIVE DESIGN CUSTOM PDF ENGINE ---
 class ProPDF(FPDF):
     def header(self):
-        # Top Header Accent Bar
-        self.set_fill_color(44, 62, 80) # Deep Slate
+        self.set_fill_color(44, 62, 80)
         self.rect(0, 0, 210, 8, 'F')
         self.ln(5)
-        
-        # Document Title Block
-        self.set_font('Helvetica', 'B', 15)
+        self.set_font('Helvetica', 'B', 14)
         self.set_text_color(44, 62, 80)
-        self.cell(w=0, h=10, text='ELECTRICAL EQUIPMENT RISK ASSESSMENT
+        self.cell(w=0, h=10, text='ELECTRICAL EQUIPMENT RISK ASSESSMENT', align='L', new_x="LMARGIN", new_y="NEXT")
+        self.set_font('Helvetica', '', 9)
+        self.set_text_color(127, 140, 141)
+        self.cell(w=0, h=4, text='In accordance with the IET Code of Practice 5th Edition Framework', align='L', new_x="LMARGIN", new_y="NEXT")
