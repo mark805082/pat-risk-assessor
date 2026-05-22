@@ -69,19 +69,17 @@ st.subheader("📋 Assessment Report Summary")
 if client_name or asset_id:
     st.markdown(f"**Client:** {client_name if client_name else 'N/A'} | **Asset:** {asset_id if asset_id else 'N/A'}")
 
-# Setup evaluation conditions & matching color blocks for PDF rendering
+# Setup evaluation conditions & descriptions
 risk_level = ""
 visual_freq = ""
 test_freq = ""
 notes = ""
-rgb_fill = (46, 204, 113)
 
 if total_score <= 1:
     risk_level = "LOW"
     visual_freq = "Every 24 Months"
     test_freq = "Every 24 to 36 Months"
     notes = "Perfect for office PCs, monitors, and stationary equipment."
-    rgb_fill = (46, 204, 113)
     st.success(f"### RISK LEVEL: {risk_level}")
     st.write(f"**Formal Visual Inspection:** {visual_freq}")
     st.write(f"**Combined Testing (PAT):** {test_freq}")
@@ -91,7 +89,6 @@ elif total_score <= 3:
     visual_freq = "Every 12 Months"
     test_freq = "Every 12 to 24 Months"
     notes = "Standard cycle. For Class II items here, routine instrument testing is not required; visual checks are sufficient."
-    rgb_fill = (52, 152, 219)
     st.success(f"### RISK LEVEL: {risk_level}")
     st.write(f"**Formal Visual Inspection:** {visual_freq}")
     st.write(f"**Combined Testing (PAT):** {test_freq}")
@@ -101,7 +98,6 @@ elif total_score <= 6:
     visual_freq = "Every 12 Months"
     test_freq = "Every 12 Months"
     notes = "Standard cycle for handheld Class I items or equipment in harsher environments."
-    rgb_fill = (230, 126, 34)
     st.warning(f"### RISK LEVEL: {risk_level}")
     st.write(f"**Recommended Initial Frequency:** {test_freq}")
     st.write(f"*{notes}*")
@@ -110,7 +106,6 @@ else:
     visual_freq = "High Frequency (Daily/Weekly checks recommended on-site)"
     test_freq = "Every 3 to 6 Months"
     notes = "Mandatory high-frequency testing for construction sites or heavily abused equipment."
-    rgb_fill = (231, 76, 60)
     st.error(f"### RISK LEVEL: {risk_level}")
     st.write(f"**Recommended Initial Frequency:** {test_freq}")
     st.write(f"*{notes}*")
@@ -121,15 +116,79 @@ if is_cable:
 st.markdown("---")
 st.subheader("📄 Export Report")
 
-# --- EXECUTIVE DESIGN CUSTOM PDF ENGINE ---
-class ProPDF(FPDF):
-    def header(self):
-        self.set_fill_color(44, 62, 80)
-        self.rect(0, 0, 210, 8, 'F')
-        self.ln(5)
-        self.set_font('Helvetica', 'B', 14)
-        self.set_text_color(44, 62, 80)
-        self.cell(w=0, h=10, text='ELECTRICAL EQUIPMENT RISK ASSESSMENT', align='L', new_x="LMARGIN", new_y="NEXT")
-        self.set_font('Helvetica', '', 9)
-        self.set_text_color(127, 140, 141)
-        self.cell(w=0, h=4, text='In accordance with the IET Code of Practice 5th Edition Framework', align='L', new_x="LMARGIN", new_y="NEXT")
+def generate_pdf():
+    pdf = FPDF()
+    pdf.add_page()
+    
+    # Header Section
+    pdf.set_font('Helvetica', 'B', 14)
+    pdf.cell(w=0, h=10, text='ELECTRICAL EQUIPMENT RISK ASSESSMENT', align='L', new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font('Helvetica', '', 9)
+    pdf.cell(w=0, h=4, text='In accordance with the IET Code of Practice 5th Edition Framework', align='L', new_x="LMARGIN", new_y="NEXT")
+    
+    # Sharp Divider Line
+    pdf.set_draw_color(150, 150, 150)
+    pdf.line(10, 26, 200, 26)
+    pdf.ln(10)
+    
+    # 1. CLIENT & JOB IDENTIFICATION
+    pdf.set_font("Helvetica", 'B', 11)
+    pdf.cell(w=0, h=6, text="1. JOB & ASSET IDENTIFICATION", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("Helvetica", '', 10)
+    pdf.cell(w=0, h=6, text=f"Client / Business: {client_name if client_name else 'Unspecified'}", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(w=0, h=6, text=f"Appliance ID / Tag: {asset_id if asset_id else 'Unspecified'}", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(w=0, h=6, text=f"Operational Environment: {env}", new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(6)
+    
+    # 2. MATRIX EVALUATION FACTORS
+    pdf.set_font("Helvetica", 'B', 11)
+    pdf.cell(w=0, h=6, text="2. RISK MATRIX ASSESSMENT FACTORS", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("Helvetica", size=10)
+    pdf.cell(w=0, h=5.5, text=f" - Handling Dynamics: {handling}", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(w=0, h=5.5, text=f" - Equipment Construction Profile: {el_class}", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(w=0, h=5.5, text=f" - Recorded Casing & Damage History: {damage}", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(w=0, h=5.5, text=f" - Lead Factor: {'Yes (+2 Points)' if is_cable else 'No'}", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("Helvetica", 'B', 10)
+    pdf.cell(w=0, h=6, text=f" Total Computed Risk Score: {total_score} Points", new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(6)
+    
+    # 3. TIMELINE OUTCOME
+    pdf.set_font("Helvetica", 'B', 11)
+    pdf.cell(w=0, h=6, text="3. RECOMMENDED MAINTENANCE SCHEDULE", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("Helvetica", 'B', 10)
+    pdf.cell(w=0, h=6, text=f" EVALUATED RISK MATRIX STATUS: {risk_level}", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("Helvetica", '', 10)
+    pdf.cell(w=0, h=5.5, text=f" - Formal Visual Inspection Interval: {visual_freq}", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(w=0, h=5.5, text=f" - Combined Electrical Testing (PAT) Frequency: {test_freq}", new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(2)
+    pdf.set_font("Helvetica", 'I', 9.5)
+    pdf.multi_cell(w=0, h=5, text=f"Directive: {notes}")
+    pdf.ln(8)
+    
+    # 4. SIGN-OFF BLOCK
+    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
+    pdf.ln(4)
+    pdf.set_font("Helvetica", 'B', 9.5)
+    pdf.cell(w=95, h=5, text="Assessed By:")
+    pdf.cell(w=95, h=5, text="Authorized Client Sign-off:", new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(8)
+    pdf.cell(w=95, h=5, text="......................................................")
+    pdf.cell(w=95, h=5, text="......................................................", new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("Helvetica", '', 8.5)
+    pdf.cell(w=95, h=4, text="Competent Electrical Inspector")
+    pdf.cell(w=95, h=4, text="Premises / Duty Holder Representative", new_x="LMARGIN", new_y="NEXT")
+    
+    # Return purely as a streamable byte string
+    return bytes(pdf.output())
+
+# Generate and force display the download button directly
+pdf_data = generate_pdf()
+
+st.download_button(
+    label="📥 Download PDF Certificate",
+    data=pdf_data,
+    file_name=f"PAT_Risk_Report_{client_name.replace(' ', '_') if client_name else 'Asset'}.pdf",
+    mime="application/pdf"
+)
+
+st.caption("Legal Note: Frequencies are recommendations based on initial risk verification and should be reviewed dynamically alongside historical failure rates.")
