@@ -1,5 +1,4 @@
-
-    import streamlit as st
+import streamlit as st
 from fpdf import FPDF
 
 st.set_page_config(page_title="PAT Risk Assessor Pro", page_icon="⚡", layout="centered")
@@ -115,61 +114,3 @@ if is_cable:
     st.warning("⚠️ *Note: Risk increased due to item being a power lead/extension.*")
 
 st.markdown("---")
-st.subheader("📄 Export Report")
-
-def generate_pdf():
-    pdf = FPDF()
-    pdf.add_page()
-    
-    # Header Section
-    pdf.set_font('Helvetica', 'B', 14)
-    pdf.cell(w=0, h=10, text='ELECTRICAL EQUIPMENT RISK ASSESSMENT', align='L', new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font('Helvetica', '', 9)
-    pdf.cell(w=0, h=4, text='In accordance with the IET Code of Practice 5th Edition Framework', align='L', new_x="LMARGIN", new_y="NEXT")
-    
-    # Sharp Divider Line
-    pdf.set_draw_color(150, 150, 150)
-    pdf.line(10, 26, 200, 26)
-    pdf.ln(10)
-    
-    # 1. CLIENT & JOB IDENTIFICATION
-    pdf.set_font("Helvetica", 'B', 11)
-    pdf.cell(w=0, h=6, text="1. JOB & ASSET IDENTIFICATION", new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font("Helvetica", '', 10)
-    pdf.cell(w=0, h=6, text=f"Client / Business: {client_name if client_name else 'Unspecified'}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(w=0, h=6, text=f"Appliance ID / Tag: {asset_id if asset_id else 'Unspecified'}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(w=0, h=6, text=f"Operational Environment: {env}", new_x="LMARGIN", new_y="NEXT")
-    pdf.ln(6)
-    
-    # 2. MATRIX EVALUATION FACTORS
-    pdf.set_font("Helvetica", 'B', 11)
-    pdf.cell(w=0, h=6, text="2. RISK MATRIX ASSESSMENT FACTORS", new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font("Helvetica", size=10)
-    pdf.cell(w=0, h=5.5, text=f
-    # 4. SIGN-OFF BLOCK
-    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
-    pdf.ln(4)
-    pdf.set_font("Helvetica", 'B', 9.5)
-    pdf.cell(w=95, h=5, text="Assessed By:")
-    pdf.cell(w=95, h=5, text="Authorized Client Sign-off:", new_x="LMARGIN", new_y="NEXT")
-    pdf.ln(8)
-    pdf.cell(w=95, h=5, text="......................................................")
-    pdf.cell(w=95, h=5, text="......................................................", new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font("Helvetica", '', 8.5)
-    pdf.cell(w=95, h=4, text="Competent Electrical Inspector")
-    pdf.cell(w=95, h=4, text="Premises / Duty Holder Representative", new_x="LMARGIN", new_y="NEXT")
-    
-    # Return purely as a streamable byte string
-    return bytes(pdf.output())
-
-# Generate and force display the download button directly
-pdf_data = generate_pdf()
-
-st.download_button(
-    label="📥 Download PDF Certificate",
-    data=pdf_data,
-    file_name=f"PAT_Risk_Report_{client_name.replace(' ', '_') if client_name else 'Asset'}.pdf",
-    mime="application/pdf"
-)
-
-st.caption("Legal Note: Frequencies are recommendations based on initial risk verification and should be reviewed dynamically alongside historical failure rates.")
