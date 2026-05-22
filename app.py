@@ -1,4 +1,5 @@
-import streamlit as st
+
+    import streamlit as st
 from fpdf import FPDF
 
 st.set_page_config(page_title="PAT Risk Assessor Pro", page_icon="⚡", layout="centered")
@@ -144,27 +145,7 @@ def generate_pdf():
     pdf.set_font("Helvetica", 'B', 11)
     pdf.cell(w=0, h=6, text="2. RISK MATRIX ASSESSMENT FACTORS", new_x="LMARGIN", new_y="NEXT")
     pdf.set_font("Helvetica", size=10)
-    pdf.cell(w=0, h=5.5, text=f" - Handling Dynamics: {handling}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(w=0, h=5.5, text=f" - Equipment Construction Profile: {el_class}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(w=0, h=5.5, text=f" - Recorded Casing & Damage History: {damage}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(w=0, h=5.5, text=f" - Lead Factor: {'Yes (+2 Points)' if is_cable else 'No'}", new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font("Helvetica", 'B', 10)
-    pdf.cell(w=0, h=6, text=f" Total Computed Risk Score: {total_score} Points", new_x="LMARGIN", new_y="NEXT")
-    pdf.ln(6)
-    
-    # 3. TIMELINE OUTCOME
-    pdf.set_font("Helvetica", 'B', 11)
-    pdf.cell(w=0, h=6, text="3. RECOMMENDED MAINTENANCE SCHEDULE", new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font("Helvetica", 'B', 10)
-    pdf.cell(w=0, h=6, text=f" EVALUATED RISK MATRIX STATUS: {risk_level}", new_x="LMARGIN", new_y="NEXT")
-    pdf.set_font("Helvetica", '', 10)
-    pdf.cell(w=0, h=5.5, text=f" - Formal Visual Inspection Interval: {visual_freq}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(w=0, h=5.5, text=f" - Combined Electrical Testing (PAT) Frequency: {test_freq}", new_x="LMARGIN", new_y="NEXT")
-    pdf.ln(2)
-    pdf.set_font("Helvetica", 'I', 9.5)
-    pdf.multi_cell(w=0, h=5, text=f"Directive: {notes}")
-    pdf.ln(8)
-    
+    pdf.cell(w=0, h=5.5, text=f
     # 4. SIGN-OFF BLOCK
     pdf.line(10, pdf.get_y(), 200, pdf.get_y())
     pdf.ln(4)
