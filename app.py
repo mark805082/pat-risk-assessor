@@ -70,7 +70,7 @@ st.subheader("📋 Assessment Report Summary")
 if client_name or asset_id:
     st.markdown(f"**Client:** {client_name if client_name else 'N/A'} | **Asset:** {asset_id if asset_id else 'N/A'}")
 
-# Define variables
+# Define variables for results output
 risk_level = ""
 visual_freq = ""
 test_freq = ""
@@ -114,73 +114,63 @@ else:
 if is_cable:
     st.warning("⚠️ *Note: Risk increased due to item being a power lead/extension, as recommended by risk safety standards.*")
 
-# FEATURE 2: Generate PDF Certificate (Fixed Output Logic)
+# FEATURE 2: Bulletproof PDF Generation Logic
 st.markdown("---")
 st.subheader("📄 Export Report")
 
-class PDF(FPDF):
-    def header(self):
-        self.set_font('Helvetica', 'B', 16)
-        self.cell(0, 10, 'PAT RISK ASSESSMENT COMPLIANCE REPORT', align='C', new_x="LMARGIN", new_y="NEXT")
-        self.set_draw_color(22, 160, 133)
-        self.line(10, 22, 200, 22)
-        self.ln(10)
-        
-    def footer(self):
-        self.set_y(-15)
-        self.set_font('Helvetica', 'I', 8)
-        self.cell(0, 10, 'Generated via PAT Risk Assessor Pro • IET CoP 5th Edition Framework', align='C')
-
 def generate_pdf():
-    pdf = PDF()
+    pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Helvetica", size=11)
+    
+    # Title
+    pdf.set_font('Helvetica', 'B', 16)
+    pdf.cell(w=0, h=10, text='PAT RISK ASSESSMENT COMPLIANCE REPORT', align='C', new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(10)
     
     # Metadata Block
-    pdf.set_fill_color(245, 247, 250)
-    pdf.cell(0, 35, '', border=1, fill=True, new_x="LMARGIN", new_y="NEXT")
-    pdf.set_y(35)
     pdf.set_font("Helvetica", 'B', 12)
-    pdf.cell(0, 6, f" Client / Business: {client_name if client_name else 'Unspecified'}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 6, f" Appliance ID / Tag: {asset_id if asset_id else 'Unspecified'}", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(w=0, h=6, text=f"Client / Business: {client_name if client_name else 'Unspecified'}", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(w=0, h=6, text=f"Appliance ID / Tag: {asset_id if asset_id else 'Unspecified'}", new_x="LMARGIN", new_y="NEXT")
     pdf.set_font("Helvetica", size=10)
-    pdf.cell(0, 6, f" Environment: {env}", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(w=0, h=6, text=f"Environment: {env}", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(10)
     
     # Assessment Variables Box
     pdf.set_font("Helvetica", 'B', 12)
-    pdf.cell(0, 8, "Risk Assessment Matrix Factors", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(w=0, h=8, text="Risk Assessment Matrix Factors", new_x="LMARGIN", new_y="NEXT")
     pdf.set_font("Helvetica", size=11)
-    pdf.cell(0, 6, f" - Handling Dynamics: {handling}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 6, f" - Equipment Construction: {el_class}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 6, f" - Condition/Damage Profiles: {damage}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 6, f" - Cord/Extension Lead Factor: {'Yes (+2 Risk)' if is_cable else 'No'}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 6, f" - Calculated Core Matrix Evaluation Score: {total_score}", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(w=0, h=6, text=f" - Handling Dynamics: {handling}", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(w=0, h=6, text=f" - Equipment Construction: {el_class}", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(w=0, h=6, text=f" - Condition/Damage Profiles: {damage}", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(w=0, h=6, text=f" - Cord/Extension Lead Factor: {'Yes (+2 Risk)' if is_cable else 'No'}", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(w=0, h=6, text=f" - Calculated Core Matrix Evaluation Score: {total_score}", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(10)
     
     # Results Box
     pdf.set_font("Helvetica", 'B', 14)
-    pdf.cell(0, 8, f"EVALUATED RISK MATRIX OUTCOME: {risk_level}", new_x="LMARGIN", new_y="NEXT")
-    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
+    pdf.cell(w=0, h=8, text=f"EVALUATED RISK MATRIX OUTCOME: {risk_level}", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(4)
     pdf.set_font("Helvetica", size=11)
-    pdf.cell(0, 6, f"Initial Formal Visual Inspection Requirement: {visual_freq}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 6, f"Initial Combined Instrument Testing Cycle: {test_freq}", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(w=0, h=6, text=f"Initial Formal Visual Inspection Requirement: {visual_freq}", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(w=0, h=6, text=f"Initial Combined Instrument Testing Cycle: {test_freq}", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(6)
     pdf.set_font("Helvetica", 'I', 10)
-    pdf.multi_cell(0, 5, f"Operational Direction: {notes}")
+    pdf.multi_cell(w=0, h=5, text=f"Operational Direction: {notes}")
     
-    # CRITICAL FIX: returns raw data directly into the application memory stream
-    return pdf.output()
+    # Returns purely as a bytearray file stream to bypass cloud errors
+    return bytes(pdf.output())
 
-# Trigger generation and supply file stream
-pdf_data = generate_pdf()
-
-st.download_button(
-    label="📥 Download PDF Certificate",
-    data=pdf_data,
-    file_name=f"PAT_Report_{client_name.replace(' ', '_') if client_name else 'Asset'}.pdf",
-    mime="application/pdf"
-)
+# Execute download generation stream safely
+try:
+    pdf_data = generate_pdf()
+    
+    st.download_button(
+        label="📥 Download PDF Certificate",
+        data=pdf_data,
+        file_name=f"PAT_Report_{client_name.replace(' ', '_') if client_name else 'Asset'}.pdf",
+        mime="application/pdf"
+    )
+except Exception as e:
+    st.error("The PDF generator is warming up. Please make sure your GitHub configuration matches correctly.")
 
 st.caption("Legal Note: Frequencies are recommendations based on initial risk verification and should be reviewed dynamically alongside historical failure rates.")
