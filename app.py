@@ -114,3 +114,44 @@ if is_cable:
     st.warning("⚠️ *Note: Risk increased due to item being a power lead/extension.*")
 
 st.markdown("---")
+st.subheader("📄 Export Report")
+
+# Simple PDF Generation Stream to guarantee execution
+def generate_pdf():
+    pdf = FPDF()
+    pdf.add_page()
+    
+    # Header
+    pdf.set_font('Helvetica', 'B', 14)
+    pdf.cell(w=0, h=10, txt='ELECTRICAL EQUIPMENT RISK ASSESSMENT', ln=1)
+    pdf.set_font('Helvetica', 'I', 9)
+    pdf.cell(w=0, h=5, txt='In accordance with the IET Code of Practice 5th Edition Framework', ln=1)
+    pdf.ln(5)
+    
+    # 1. Job Details
+    pdf.set_font('Helvetica', 'B', 11)
+    pdf.cell(w=0, h=6, txt='1. JOB & ASSET IDENTIFICATION', ln=1)
+    pdf.set_font('Helvetica', '', 10)
+    pdf.cell(w=0, h=6, txt=f'Client / Business Name: {client_name if client_name else "Unspecified"}', ln=1)
+    pdf.cell(w=0, h=6, txt=f'Appliance ID / Asset Tag: {asset_id if asset_id else "Unspecified"}', ln=1)
+    pdf.cell(w=0, h=6, txt=f'Operational Environment: {env}', ln=1)
+    pdf.ln(4)
+    
+    # 2. Factors
+    pdf.set_font('Helvetica', 'B', 11)
+    pdf.cell(w=0, h=6, txt='2. RISK MATRIX ASSESSMENT FACTORS', ln=1)
+    pdf.set_font('Helvetica', '', 10)
+    pdf.cell(w=0, h=6, txt=f' - Handling Dynamics: {handling}', ln=1)
+    pdf.cell(w=0, h=6, txt=f' - Equipment Construction Profile: {el_class}', ln=1)
+    pdf.cell(w=0, h=6, txt=f' - Recorded Casing & Damage History: {damage}', ln=1)
+    pdf.cell(w=0, h=6, txt=f" - Lead Factor: {'Yes (+2 Points)' if is_cable else 'No'}", ln=1)
+    pdf.cell(w=0, h=6, txt=f' - Total Score: {total_score} Points', ln=1)
+    pdf.ln(4)
+    
+    # 3. Schedule
+    pdf.set_font('Helvetica', 'B', 11)
+    pdf.cell(w=0, h=6, txt='3. RECOMMENDED MAINTENANCE SCHEDULE', ln=1)
+    pdf.set_font('Helvetica', 'B', 10)
+    pdf.cell(w=0, h=6, txt=f' EVALUATED RISK MATRIX STATUS: {risk_level}', ln=1)
+    pdf.set_font('Helvetica', '', 10)
+    pdf.cell(w=0, h=6, txt=f'
