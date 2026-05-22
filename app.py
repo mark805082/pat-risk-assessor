@@ -1,4 +1,5 @@
 import streamlit as st
+from fpdf import FPDF
 
 st.set_page_config(page_title="PAT Risk Assessor Pro", page_icon="⚡", layout="centered")
 
@@ -6,7 +7,23 @@ st.title("⚡ PAT Risk Assessor Pro")
 st.write("IET Code of Practice (5th Edition) Compliant Frequency Matrix")
 st.markdown("---")
 
-# 1. ENVIRONMENT (Recalibrated for lower baseline office risk)
+# FEATURE 1: Client and Asset Logging Inputs
+st.subheader("📁 Job Identification")
+col1, col2 = st.columns(2)
+
+with col1:
+    client_name = st.text_input("Client / Business Name:", placeholder="e.g., Acme Corp")
+
+with col2:
+    asset_id = st.text_input("Appliance ID / Asset Tag:", placeholder="e.g., ASSET-001")
+
+st.markdown("---")
+
+# FEATURE 3: Cables & Extension Leads Toggle
+is_cable = st.checkbox("🔌 Is this an extension lead or a detachable mains cable?", 
+                       help="Extension leads and trailing cables face significantly higher mechanical stress and wear.")
+
+# 1. ENVIRONMENT 
 env = st.selectbox(
     "Step 1: Select the operational environment:",
     ["Low Risk (Office, clean shop)", 
@@ -42,28 +59,126 @@ damage = st.selectbox(
 damage_score = 0 if "No" in damage else 2
 
 st.markdown("---")
-total_score = env_score + handling_score + class_score + damage_score
+
+# Calculate totals (Including Feature 3 modifier if checked)
+cable_modifier = 2 if is_cable else 0
+total_score = env_score + handling_score + class_score + damage_score + cable_modifier
+
 st.subheader("📋 Assessment Report Summary")
 
-# NEW RECALIBRATED LOGIC BRACKETS
+# Display the logged details
+if client_name or asset_id:
+    st.markdown(f"**Client:** {client_name if client_name else 'N/A'} | **Asset:** {asset_id if asset_id else 'N/A'}")
+
+# Define output strings based on logic rules
+risk_level = ""
+visual_freq = ""
+test_freq = ""
+notes = ""
+
 if total_score <= 1:
-    st.success("### RISK LEVEL: LOW")
-    st.write("**Formal Visual Inspection:** Every 24 Months")
-    st.write("**Combined Testing (PAT):** Every 24 to 36 Months")
-    st.info("💡 *Perfect for office PCs, monitors, and stationary earthed/double-insulated equipment.*")
+    risk_level = "LOW"
+    visual_freq = "Every 24 Months"
+    test_freq = "Every 24 to 36 Months"
+    notes = "Perfect for office PCs, monitors, and stationary earthed/double-insulated equipment."
+    st.success(f"### RISK LEVEL: {risk_level}")
+    st.write(f"**Formal Visual Inspection:** {visual_freq}")
+    st.write(f"**Combined Testing (PAT):** {test_freq}")
+    st.info(f"💡 *{notes}*")
 elif total_score <= 3:
-    st.success("### RISK LEVEL: LOW-MEDIUM")
-    st.write("**Formal Visual Inspection:** Every 12 Months")
-    st.write("**Combined Testing (PAT):** Every 12 to 24 Months")
-    if "Class II" in el_class:
-        st.write("**Note:** For Class II items (like chargers) in this bracket, routine instrument testing is not required; visual checks are sufficient.")
+    risk_level = "LOW-MEDIUM"
+    visual_freq = "Every 12 Months"
+    test_freq = "Every 12 to 24 Months"
+    notes = "Standard cycle. For Class II items (like chargers) here, routine instrument testing is not required; visual checks are sufficient."
+    st.success(f"### RISK LEVEL: {risk_level}")
+    st.write(f"**Formal Visual Inspection:** {visual_freq}")
+    st.write(f"**Combined Testing (PAT):** {test_freq}")
+    st.write(notes)
 elif total_score <= 6:
-    st.warning("### RISK LEVEL: MEDIUM-HIGH")
-    st.write("**Recommended Initial Frequency:** Every 12 Months")
-    st.write("*Standard cycle for handheld Class I items (like kettles) or equipment in harsher environments.*")
+    risk_level = "MEDIUM-HIGH"
+    visual_freq = "Every 12 Months"
+    test_freq = "Every 12 Months"
+    notes = "Standard cycle for handheld Class I items (like kettles) or equipment in harsher environments."
+    st.warning(f"### RISK LEVEL: {risk_level}")
+    st.write(f"**Recommended Initial Frequency:** {test_freq}")
+    st.write(f"*{notes}*")
 else:
-    st.error("### RISK LEVEL: HIGH / EXTREME")
-    st.write("**Recommended Initial Frequency:** Every 3 to 6 Months")
-    st.write("*Mandatory high-frequency testing for construction sites or heavily abused equipment.*")
+    risk_level = "HIGH / EXTREME"
+    visual_freq = "High Frequency (Daily/Weekly checks recommended on-site)"
+    test_freq = "Every 3 to 6 Months"
+    notes = "Mandatory high-frequency testing for construction sites, heavy tools, or heavily abused equipment."
+    st.error(f"### RISK LEVEL: {risk_level}")
+    st.write(f"**Recommended Initial Frequency:** {test_freq}")
+    st.write(f"*{notes}*")
+
+if is_cable:
+    st.warning("⚠️ *Note: Risk increased due to item being a power lead/extension, as recommended by risk safety standards.*")
+
+# FEATURE 2: Generate PDF Certificate
+st.markdown("---")
+st.subheader("📄 Export Report")
+
+class PDF(FPDF):
+    def header(self):
+        self.set_font('Helvetica', 'B', 16)
+        self.cell(0, 10, 'PAT RISK ASSESSMENT COMPLIANCE REPORT', ln=True, align='C')
+        self.set_draw_color(22, 160, 133)
+        self.line(10, 22, 200, 22)
+        self.ln(10)
+        
+    def footer(self):
+        self.set_y(-15)
+        self.set_font('Helvetica', 'I', 8)
+        self.cell(0, 10, 'Generated via PAT Risk Assessor Pro • IET CoP 5th Edition Framework', align='C')
+
+def generate_pdf():
+    pdf = PDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=11)
     
+    # Metadata Block
+    pdf.set_fill_color(245, 247, 250)
+    pdf.cell(0, 35, '', border=1, fill=True, ln=True)
+    pdf.set_y(35)
+    pdf.set_font("Helvetica", 'B', 12)
+    pdf.cell(0, 6, f" Client / Business: {client_name if client_name else 'Unspecified'}", ln=True)
+    pdf.cell(0, 6, f" Appliance ID / Tag: {asset_id if asset_id else 'Unspecified'}", ln=True)
+    pdf.set_font("Helvetica", size=10)
+    pdf.cell(0, 6, f" Environment: {env}", ln=True)
+    pdf.ln(10)
+    
+    # Assessment Variables Box
+    pdf.set_font("Helvetica", 'B', 12)
+    pdf.cell(0, 8, "Risk Assessment Matrix Factors", ln=True)
+    pdf.set_font("Helvetica", size=11)
+    pdf.cell(0, 6, f" - Handling Dynamics: {handling}", ln=True)
+    pdf.cell(0, 6, f" - Equipment Construction: {el_class}", ln=True)
+    pdf.cell(0, 6, f" - Condition/Damage Profiles: {damage}", ln=True)
+    pdf.cell(0, 6, f" - Cord/Extension Lead Factor: {'Yes (+2 Risk)' if is_cable else 'No'}", ln=True)
+    pdf.cell(0, 6, f" - Calculated Core Matrix Evaluation Score: {total_score}", ln=True)
+    pdf.ln(10)
+    
+    # Results Box
+    pdf.set_font("Helvetica", 'B', 14)
+    pdf.cell(0, 8, f"EVALUATED RISK MATRIX OUTCOME: {risk_level}", ln=True)
+    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
+    pdf.ln(4)
+    pdf.set_font("Helvetica", size=11)
+    pdf.cell(0, 6, f"Initial Formal Visual Inspection Requirement: {visual_freq}", ln=True)
+    pdf.cell(0, 6, f"Initial Combined Instrument Testing Cycle: {test_freq}", ln=True)
+    pdf.ln(6)
+    pdf.set_font("Helvetica", 'I', 10)
+    pdf.multi_cell(0, 5, f"Operational Direction: {notes}")
+    
+    return pdf.output()
+
+pdf_bytes = generate_pdf()
+
+st.download_button(
+    label="📥 Download PDF Certificate",
+    data=bytes(pdf_bytes),
+    file_name=f"PAT_Report_{client_name.replace(' ', '_') if client_name else 'Asset'}.pdf",
+    mime="application/pdf"
+)
+
 st.caption("Legal Note: Frequencies are recommendations based on initial risk verification and should be reviewed dynamically alongside historical failure rates.")
