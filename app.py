@@ -121,37 +121,87 @@ def generate_pdf():
     pdf = FPDF()
     pdf.add_page()
     
+    # Clean fallbacks for formatting stability
+    display_client = str(client_name) if client_name else "Unspecified"
+    display_asset = str(asset_id) if asset_id else "Unspecified"
+    
     # Header
-    pdf.set_font('Helvetica', 'B', 14)
-    pdf.cell(w=0, h=10, txt='ELECTRICAL EQUIPMENT RISK ASSESSMENT', ln=1)
-    pdf.set_font('Helvetica', 'I', 9)
-    pdf.cell(w=0, h=5, txt='In accordance with the IET Code of Practice 5th Edition Framework', ln=1)
+    pdf.set_font("Helvetica", "B", 14)
+    pdf.cell(w=0, h=10, txt="ELECTRICAL EQUIPMENT RISK ASSESSMENT", ln=1)
+    pdf.set_font("Helvetica", "I", 9)
+    pdf.cell(w=0, h=5, txt="In accordance with the IET Code of Practice 5th Edition Framework", ln=1)
     pdf.ln(5)
     
     # 1. Job Details
-    pdf.set_font('Helvetica', 'B', 11)
-    pdf.cell(w=0, h=6, txt='1. JOB & ASSET IDENTIFICATION', ln=1)
-    pdf.set_font('Helvetica', '', 10)
-    pdf.cell(w=0, h=6, txt=f'Client / Business Name: {client_name if client_name else "Unspecified"}', ln=1)
-    pdf.cell(w=0, h=6, txt=f'Appliance ID / Asset Tag: {asset_id if asset_id else "Unspecified"}', ln=1)
-    pdf.cell(w=0, h=6, txt=f'Operational Environment: {env}', ln=1)
+    pdf.set_font("Helvetica", "B", 11)
+    pdf.cell(w=0, h=6, txt="1. JOB & ASSET IDENTIFICATION", ln=1)
+    pdf.set_font("Helvetica", "", 10)
+    pdf.cell(w=0, h=6, txt=f"Client / Business Name: {display_client}", ln=1)
+    pdf.cell(w=0, h=6, txt=f"Appliance ID / Asset Tag: {display_asset}", ln=1)
+    pdf.cell(w=0, h=6, txt=f"Operational Environment: {env}", ln=1)
     pdf.ln(4)
     
     # 2. Factors
-    pdf.set_font('Helvetica', 'B', 11)
-    pdf.cell(w=0, h=6, txt='2. RISK MATRIX ASSESSMENT FACTORS', ln=1)
-    pdf.set_font('Helvetica', '', 10)
-    pdf.cell(w=0, h=6, txt=f' - Handling Dynamics: {handling}', ln=1)
-    pdf.cell(w=0, h=6, txt=f' - Equipment Construction Profile: {el_class}', ln=1)
-    pdf.cell(w=0, h=6, txt=f' - Recorded Casing & Damage History: {damage}', ln=1)
+    pdf.set_font("Helvetica", "B", 11)
+    pdf.cell(w=0, h=6, txt="2. RISK MATRIX ASSESSMENT FACTORS", ln=1)
+    pdf.set_font("Helvetica", "", 10)
+    pdf.cell(w=0, h=6, txt=f" - Handling Dynamics: {handling}", ln=1)
+    pdf.cell(w=0, h=6, txt=f" - Equipment Construction Profile: {el_class}", ln=1)
+    pdf.cell(w=0, h=6, txt=f" - Recorded Casing & Damage History: {damage}", ln=1)
     pdf.cell(w=0, h=6, txt=f" - Lead Factor: {'Yes (+2 Points)' if is_cable else 'No'}", ln=1)
-    pdf.cell(w=0, h=6, txt=f' - Total Score: {total_score} Points', ln=1)
+    pdf.cell(w=0, h=6, txt=f" - Total Score: {total_score} Points", ln=1)
     pdf.ln(4)
     
     # 3. Schedule
-    pdf.set_font('Helvetica', 'B', 11)
-    pdf.cell(w=0, h=6, txt='3. RECOMMENDED MAINTENANCE SCHEDULE', ln=1)
-    pdf.set_font('Helvetica', 'B', 10)
-    pdf.cell(w=0, h=6, txt=f' EVALUATED RISK MATRIX STATUS: {risk_level}', ln=1)
-    pdf.set_font('Helvetica', '', 10)
-    pdf.cell(w=0, h=6, txt=f'
+    pdf.set_font("Helvetica", "B", 11)
+    pdf.cell(w=0, h=6, txt="3. RECOMMENDED MAINTENANCE SCHEDULE", ln=1)
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.cell(w=0, h=6, txt=f" EVALUATED RISK MATRIX STATUS: {risk_level}", ln=1)
+    pdf.set_font("Helvetica", "", 10)
+    pdf.cell(w=0, h=6, txt=f" - Formal Visual Inspection Interval: {visual_freq}", ln=1)
+    pdf.cell(w=0, h=6, txt=f" - Combined Electrical Testing (PAT) Frequency: {test_freq}", ln=1)
+    pdf.set_font("Helvetica", "I", 9)
+    pdf.multi_cell(w=0, h=5, txt=f"Directive: {notes}")
+    pdf.ln(4)
+    
+    # 4. Disclaimer
+    pdf.set_font("Helvetica", "B", 9)
+    pdf.cell(w=0, h=5, txt="4. LEGAL FRAMEWORK & LIABILITY LIMITATIONS", ln=1)
+    pdf.set_font("Helvetica", "I", 8)
+    disclaimer = (
+        "This assessment provides a maintenance frequency recommendation based strictly on the risk profile calculated "
+        "on the date of inspection in accordance with the IET Code of Practice (5th Edition). This document does not constitute "
+        "a permanent safety guarantee. Continuous day-to-day electrical equipment safety remains the ongoing operational "
+        "responsibility of the designated workplace Duty Holder, including the implementation of routine informal user checks "
+        "as mandated by the Electricity at Work Regulations 1989."
+    )
+    pdf.multi_cell(w=0, h=4, text=disclaimer)
+    pdf.ln(6)
+    
+    # 5. Sign-off
+    pdf.set_font("Helvetica", "B", 9)
+    pdf.cell(w=95, h=5, txt="Assessed By:")
+    pdf.cell(w=95, h=5, txt="Authorized Client Sign-off:", ln=1)
+    pdf.ln(6)
+    pdf.cell(w=95, h=4, txt="......................................................")
+    pdf.cell(w=95, h=4, txt="......................................................", ln=1)
+    pdf.set_font("Helvetica", "", 8)
+    pdf.cell(w=95, h=4, txt="Competent Electrical Inspector")
+    pdf.cell(w=95, h=4, txt="Premises / Duty Holder Representative", ln=1)
+    
+    return bytes(pdf.output())
+
+# Safe execution block
+try:
+    pdf_data = generate_pdf()
+    
+    st.download_button(
+        label="📥 Download PDF Certificate",
+        data=pdf_data,
+        file_name="PAT_Risk_Report.pdf",
+        mime="application/pdf"
+    )
+except Exception as e:
+    st.error(f"PDF System Message: {str(e)}")
+
+st.caption("Legal Note: Frequencies are recommendations based on initial risk verification and should be reviewed dynamically alongside historical failure rates.")
