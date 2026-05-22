@@ -114,7 +114,7 @@ else:
 if is_cable:
     st.warning("⚠️ *Note: Risk increased due to item being a power lead/extension, as recommended by risk safety standards.*")
 
-# FEATURE 2: Bulletproof PDF Generation Logic
+# FEATURE 2: PDF Generation Logic
 st.markdown("---")
 st.subheader("📄 Export Report")
 
@@ -126,6 +126,9 @@ def generate_pdf():
     pdf.set_font('Helvetica', 'B', 16)
     pdf.cell(w=0, h=10, text='PAT RISK ASSESSMENT COMPLIANCE REPORT', align='C', new_x="LMARGIN", new_y="NEXT")
     pdf.ln(10)
+    
+    # CRITICAL FIX: Strip the special character [回] out before generating the PDF text string
+    clean_class_string = el_class.split(" [")[0] if "Class II" in el_class else el_class
     
     # Metadata Block
     pdf.set_font("Helvetica", 'B', 12)
@@ -140,7 +143,7 @@ def generate_pdf():
     pdf.cell(w=0, h=8, text="Risk Assessment Matrix Factors", new_x="LMARGIN", new_y="NEXT")
     pdf.set_font("Helvetica", size=11)
     pdf.cell(w=0, h=6, text=f" - Handling Dynamics: {handling}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(w=0, h=6, text=f" - Equipment Construction: {el_class}", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(w=0, h=6, text=f" - Equipment Construction: {clean_class_string}", new_x="LMARGIN", new_y="NEXT")
     pdf.cell(w=0, h=6, text=f" - Condition/Damage Profiles: {damage}", new_x="LMARGIN", new_y="NEXT")
     pdf.cell(w=0, h=6, text=f" - Cord/Extension Lead Factor: {'Yes (+2 Risk)' if is_cable else 'No'}", new_x="LMARGIN", new_y="NEXT")
     pdf.cell(w=0, h=6, text=f" - Calculated Core Matrix Evaluation Score: {total_score}", new_x="LMARGIN", new_y="NEXT")
@@ -157,7 +160,6 @@ def generate_pdf():
     pdf.set_font("Helvetica", 'I', 10)
     pdf.multi_cell(w=0, h=5, text=f"Operational Direction: {notes}")
     
-    # Returns purely as a bytearray file stream to bypass cloud errors
     return bytes(pdf.output())
 
 # Execute download generation stream safely
